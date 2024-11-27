@@ -1,8 +1,8 @@
 using Calculation.API.Mapping;
-using Calculation.Application.Model;
 using Calculation.Application.Services;
+using Calculation.Application.Services.GetPrice;
 using Calculation.Contract.Request;
-using Calculation.Contract.Response;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using static Calculation.Common.Common;
 
@@ -14,12 +14,13 @@ namespace Calculation.API.Controllers
     {
 
         private readonly ILogger<PriceController> _logger;
+        private readonly ISender _vehicleMediator;
 
         IVehicleService _vehicleCalculator;
-        public PriceController(IVehicleService vehicleCalculator, ILogger<PriceController> logger)
+        public PriceController(ISender vehicleMediator, ILogger<PriceController> logger)
         {
             _logger = logger;
-            _vehicleCalculator = vehicleCalculator;
+            _vehicleMediator = vehicleMediator;
         }
 
         [HttpPost(ApiEndpoints.CalculatePrice)]
@@ -32,7 +33,7 @@ namespace Calculation.API.Controllers
                 {
                     if (request.BasePrice > 0)
                     {
-                        var updatedPrice = await _vehicleCalculator.CalculateFees(request.BasePrice, vehicleType, token);
+                        var updatedPrice = await _vehicleMediator.Send(new GetVehiclePrice(request.BasePrice, vehicleType));
                         var response = updatedPrice.MapToVehicleResponse();
                         return Ok(response);
                     }

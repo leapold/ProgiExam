@@ -9,6 +9,11 @@ namespace Calculation.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IVehicleService, VehicleService>();
+            services.AddMediatR(options =>
+            {
+                options.RegisterServicesFromAssemblyContaining(typeof(ServicesRegistration));
+            });
+
             return services;
         }
     }
